@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>11膠囊旅館預約住宿系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status-done {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+            text-decoration: line-through;
+        }
+        .tab-active {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen py-8 px-4">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-800">11膠囊旅館預約住宿系統</h1>
+            <p class="text-gray-600 mt-2">Capsule Hotel Booking System</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700">新增入住預約</h2>
+                    <form id="bookingForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">姓名</label>
+                            <input type="text" id="field1" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">證件號碼 (護照)</label>
+                            <input type="text" id="field2" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">入住時間</label>
+                            <input type="datetime-local" id="field3" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">入住房型</label>
+                            <select id="field4" class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="標準單人艙">標準單人艙</option>
+                                <option value="豪華單人艙">豪華單人艙</option>
+                                <option value="商務雙人艙">商務雙人艙</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">聯絡號碼</label>
+                            <input type="tel" id="field5" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">備註</label>
+                            <textarea id="field6" rows="3" class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-200">
+                            立即預約
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="flex border-b">
+                        <button onclick="setFilter('all')" id="tab-all" class="px-6 py-3 font-medium text-sm tab-active">全部</button>
+                        <button onclick="setFilter('active')" id="tab-active" class="px-6 py-3 font-medium text-sm text-gray-500 hover:text-blue-600">待處理 (Active)</button>
+                        <button onclick="setFilter('done')" id="tab-done" class="px-6 py-3 font-medium text-sm text-gray-500 hover:text-blue-600">已上載 (Done)</button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">狀態</th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">姓名 / 證件</th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">入住時間</th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">房型</th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">聯絡電話</th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookingTableBody" class="divide-y divide-gray-100">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id="emptyState" class="hidden p-10 text-center text-gray-400">
+                        目前沒有預約資料
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let bookings = JSON.parse(localStorage.getItem('hotel_bookings')) || [];
+        let currentFilter = 'all';
+
+        const bookingForm = document.getElementById('bookingForm');
+        const tableBody = document.getElementById('bookingTableBody');
+        const emptyState = document.getElementById('emptyState');
+
+        // 初始化
+        renderTable();
+
+        // 表單提交事件
+        bookingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const newBooking = {
+                id: Date.now(),
+                createdAt: new Date().toISOString(),
+                status: 'active',
+                field1: document.getElementById('field1').value,
+                field2: document.getElementById('field2').value,
+                field3: document.getElementById('field3').value,
+                field4: document.getElementById('field4').value,
+                field5: document.getElementById('field5').value,
+                field6: document.getElementById('field6').value
+            };
+
+            bookings.push(newBooking);
+            saveAndRender();
+            bookingForm.reset();
+        });
+
+        // 儲存至 localStorage 並重新渲染
+        function saveAndRender() {
+            localStorage.setItem('hotel_bookings', JSON.stringify(bookings));
+            renderTable();
+        }
+
+        // 切換狀態
+        function toggleStatus(id) {
+            bookings = bookings.map(item => {
+                if (item.id === id) {
+                    return { ...item, status: item.status === 'active' ? 'done' : 'active' };
+                }
+                return item;
+            });
+            saveAndRender();
+        }
+
+        // 刪除資料
+        function deleteBooking(id) {
+            if(confirm('確定要刪除此筆預約嗎？')) {
+                bookings = bookings.filter(item => item.id !== id);
+                saveAndRender();
+            }
+        }
+
+        // 過濾器切換
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // 更新 UI 樣式
+            ['all', 'active', 'done'].forEach(f => {
+                const tab = document.getElementById(`tab-${f}`);
+                if (f === filter) {
+                    tab.classList.add('tab-active');
+                    tab.classList.remove('text-gray-500');
+                } else {
+                    tab.classList.remove('tab-active');
+                    tab.classList.add('text-gray-500');
+                }
+            });
+
+            renderTable();
+        }
+
+        // 渲染表格
+        function renderTable() {
+            const filteredData = bookings.filter(item => {
+                if (currentFilter === 'all') return true;
+                return item.status === currentFilter;
+            });
+
+            tableBody.innerHTML = '';
+            
+            if (filteredData.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                filteredData.forEach(item => {
+                    const isDone = item.status === 'done';
+                    const row = document.createElement('tr');
+                    row.className = `hover:bg-gray-50 transition-colors ${isDone ? 'status-done' : ''}`;
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-4">
+                            <span class="px-2 py-1 text-xs rounded-full ${isDone ? 'bg-gray-200 text-gray-500' : 'bg-green-100 text-green-700'}">
+                                ${isDone ? '已上載' : '等待中'}
+                            </span>
+                        </td>
+                        <td class="px-4 py-4">
+                            <div class="font-medium text-gray-900">${item.field1}</div>
+                            <div class="text-xs text-gray-500">${item.field2}</div>
+                        </td>
+                        <td class="px-4 py-4 text-sm text-gray-600">
+                            ${item.field3.replace('T', ' ')}
+                        </td>
+                        <td class="px-4 py-4 text-sm text-gray-600">
+                            ${item.field4}
+                        </td>
+                        <td class="px-4 py-4 text-sm text-gray-600">
+                            ${item.field5}
+                        </td>
+                        <td class="px-4 py-4 text-sm space-x-2">
+                            <button onclick="toggleStatus(${item.id})" class="text-blue-600 hover:text-blue-800 font-medium">
+                                ${isDone ? '重啟' : '完成'}
+                            </button>
+                            <button onclick="deleteBooking(${item.id})" class="text-red-500 hover:text-red-700">
+                                刪除
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
