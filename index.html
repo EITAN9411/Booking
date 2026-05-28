@@ -55,6 +55,10 @@
                             <input type="tel" name="field5" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-600">國籍</label>
+                            <input type="text" name="field7" required placeholder="例如：中國、馬來西亞" class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-600">備註</label>
                             <textarea name="field6" rows="3" class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
                         </div>
@@ -78,8 +82,8 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">狀態</th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">姓名 / 證件</th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">入住時間</th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">預約人資訊</th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">入住時間 (北京時間)</th>
                                     <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">房型</th>
                                     <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">操作</th>
                                 </tr>
@@ -120,13 +124,14 @@
                 field3: formData.get('field3'),
                 field4: formData.get('field4'),
                 field5: formData.get('field5'),
-                field6: formData.get('field6')
+                field6: formData.get('field6'),
+                field7: formData.get('field7')
             };
             records.push(newRecord);
             saveData(records);
         }
 
-        // 4. 更新 Record (切換狀態或刪除)
+        // 4. 更新 Record
         function updateRecord(id, changes) {
             let records = loadData();
             if (changes === null) {
@@ -161,11 +166,16 @@
                         </span>
                     </td>
                     <td class="px-4 py-4">
-                        <div class="font-medium text-gray-900">${item.field1}</div>
-                        <div class="text-xs text-gray-500">${item.field2}</div>
+                        <div class="font-medium text-gray-900">${item.field1} (${item.field7 || '未註明'})</div>
+                        <div class="text-xs text-gray-500">證件：${item.field2}</div>
+                        <div class="text-xs text-gray-400">電話：${item.field5}</div>
                     </td>
-                    <td class="px-4 py-4 text-sm text-gray-600">${item.field3.replace('T', ' ')}</td>
-                    <td class="px-4 py-4 text-sm text-gray-600">${item.field4}</td>
+                    <td class="px-4 py-4 text-sm text-gray-600 font-mono">
+                        ${item.field3.replace('T', ' ')}
+                    </td>
+                    <td class="px-4 py-4 text-sm text-gray-600">
+                        ${item.field4}
+                    </td>
                     <td class="px-4 py-4 text-sm space-x-2">
                         <button onclick="handleStatusToggle(${item.id}, '${item.status}')" class="text-blue-600 hover:text-blue-800 font-medium">
                             ${isDone ? '重啟' : '完成'}
@@ -177,7 +187,6 @@
             });
         }
 
-        // 輔助函式：處理過濾並渲染
         function applyFilterAndRender() {
             const allRecords = loadData();
             const filtered = allRecords.filter(r => {
@@ -188,7 +197,6 @@
             updateTabs();
         }
 
-        // 輔助函式：切換 Tab UI
         function updateTabs() {
             ['all', 'active', 'done'].forEach(f => {
                 const tab = document.getElementById(`tab-${f}`);
@@ -218,7 +226,6 @@
             }
         }
 
-        // 初始化與事件綁定
         document.getElementById('bookingForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
