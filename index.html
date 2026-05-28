@@ -62,7 +62,7 @@
                             <label class="block text-sm font-medium text-gray-600">備註</label>
                             <textarea name="field6" rows="3" class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
                         </div>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-200">
+                        <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-200">
                             立即預約
                         </button>
                     </form>
@@ -98,23 +98,76 @@
     </div>
 
     <script>
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3cJsvzd-lK3AwQL4Dfa-gwW15tQSOTuHpGm_AReh171AphS50W-IszxXLpNH7kt7G3Q/exec";
         let currentFilter = 'all';
 
-        // 1. 讀取資料
-        function loadData() {
-            const data = localStorage.getItem('records');
-            return data ? JSON.parse(data) : [];
+        // --- Backend Connectors ---
+
+        async function syncToSheet(payload) {
+            try {
+                await fetch(APPS_SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors", // GAS 限制通常需要 no-cors 或透過特定方式處理，但 POST 常見做法如下
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify(payload)
+                });
+                console.log("Sync success:", payload.action);
+            } catch (err) {
+                console.error("Sync failed:", err);
+            }
         }
 
-        // 2. 儲存資料
+        async function fetchRecordsFromSheet() {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL);
+                const data = await response.json();
+                if (data.ok) {
+                    return data.records.map(normalizeRecord);
+                }
+                return null;
+            } catch (err) {
+                console.error("Fetch Sheet failed:", err);
+                return null;
+            }
+        }
+
+        function normalizeRecord(record) {
+            // 將 Sheet Header 對應回前端使用的 Key
+            return {
+                id: record.ID || record.id,
+                createdAt: record.CreatedAt || record.createdAt,
+                status: record.Status || record.status,
+                field1: record.field1,
+                field2: record.field2,
+                field3: record.field3,
+                field4: record.field4,
+                field5: record.field5,
+                field6: record.field6,
+                field7: record.field7
+            };
+        }
+
+        // --- Core Functions ---
+
+        async function loadData() {
+            // 優先讀取雲端
+            const sheetData = await fetchRecordsFromSheet();
+            if (sheetData) {
+                localStorage.setItem('records', JSON.stringify(sheetData));
+                return sheetData;
+            }
+            // Fallback 到本地
+            const localData = localStorage.getItem('records');
+            return localData ? JSON.parse(localData) : [];
+        }
+
         function saveData(records) {
             localStorage.setItem('records', JSON.stringify(records));
-            applyFilterAndRender();
+            // 這裡不再呼叫 applyFilterAndRender，因為 async 流程由 caller 控制
         }
 
-        // 3. 建立 Record
-        function createRecord(formData) {
-            const records = loadData();
+        async function createRecord(formData) {
+            const records = JSON.parse(localStorage.getItem('records') || "[]");
             const newRecord = {
                 id: Date.now(),
                 createdAt: new Date().toISOString(),
@@ -127,22 +180,29 @@
                 field6: formData.get('field6'),
                 field7: formData.get('field7')
             };
+            
             records.push(newRecord);
             saveData(records);
+            
+            // 同步到雲端
+            await syncToSheet({ action: "create", record: newRecord });
+            await applyFilterAndRender();
         }
 
-        // 4. 更新 Record
-        function updateRecord(id, changes) {
-            let records = loadData();
+        async function updateRecord(id, changes) {
+            let records = JSON.parse(localStorage.getItem('records') || "[]");
             if (changes === null) {
                 records = records.filter(r => r.id !== id);
+                // 注意：你的 GAS 目前可能不支援刪除，此處僅處理本地
             } else {
                 records = records.map(r => r.id === id ? { ...r, ...changes } : r);
+                // 同步更新到雲端
+                await syncToSheet({ action: "update", id: id, changes: changes });
             }
             saveData(records);
+            await applyFilterAndRender();
         }
 
-        // 5. 顯示資料
         function renderList(recordsToShow) {
             const tableBody = document.getElementById('bookingTableBody');
             const emptyState = document.getElementById('emptyState');
@@ -171,7 +231,7 @@
                         <div class="text-xs text-gray-400">電話：${item.field5}</div>
                     </td>
                     <td class="px-4 py-4 text-sm text-gray-600 font-mono">
-                        ${item.field3.replace('T', ' ')}
+                        ${String(item.field3).replace('T', ' ')}
                     </td>
                     <td class="px-4 py-4 text-sm text-gray-600">
                         ${item.field4}
@@ -187,8 +247,8 @@
             });
         }
 
-        function applyFilterAndRender() {
-            const allRecords = loadData();
+        async function applyFilterAndRender() {
+            const allRecords = await loadData();
             const filtered = allRecords.filter(r => {
                 if (currentFilter === 'all') return true;
                 return r.status === currentFilter;
@@ -200,12 +260,14 @@
         function updateTabs() {
             ['all', 'active', 'done'].forEach(f => {
                 const tab = document.getElementById(`tab-${f}`);
-                if (f === currentFilter) {
-                    tab.classList.add('tab-active');
-                    tab.classList.remove('text-gray-500');
-                } else {
-                    tab.classList.remove('tab-active');
-                    tab.classList.add('text-gray-500');
+                if (tab) {
+                    if (f === currentFilter) {
+                        tab.classList.add('tab-active');
+                        tab.classList.remove('text-gray-500');
+                    } else {
+                        tab.classList.remove('tab-active');
+                        tab.classList.add('text-gray-500');
+                    }
                 }
             });
         }
@@ -215,22 +277,29 @@
             applyFilterAndRender();
         }
 
-        function handleStatusToggle(id, currentStatus) {
+        async function handleStatusToggle(id, currentStatus) {
             const nextStatus = currentStatus === 'active' ? 'done' : 'active';
-            updateRecord(id, { status: nextStatus });
+            await updateRecord(id, { status: nextStatus });
         }
 
-        function handleDelete(id) {
+        async function handleDelete(id) {
             if (confirm('確定要刪除此預約？')) {
-                updateRecord(id, null);
+                await updateRecord(id, null);
             }
         }
 
-        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = "上傳中...";
+            
             const formData = new FormData(this);
-            createRecord(formData);
+            await createRecord(formData);
+            
             this.reset();
+            btn.disabled = false;
+            btn.innerText = "立即預約";
         });
 
         window.onload = applyFilterAndRender;
