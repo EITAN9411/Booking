@@ -32,19 +32,19 @@
                     <form id="bookingForm" class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-600">姓名</label>
-                            <input type="text" id="field1" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="text" name="field1" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600">證件號碼 (護照)</label>
-                            <input type="text" id="field2" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="text" name="field2" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600">入住時間</label>
-                            <input type="datetime-local" id="field3" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="datetime-local" name="field3" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600">入住房型</label>
-                            <select id="field4" class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                            <select name="field4" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
                                 <option value="標準單人艙">標準單人艙</option>
                                 <option value="豪華單人艙">豪華單人艙</option>
                                 <option value="商務雙人艙">商務雙人艙</option>
@@ -52,11 +52,11 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600">聯絡號碼</label>
-                            <input type="tel" id="field5" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="tel" name="field5" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600">備註</label>
-                            <textarea id="field6" rows="3" class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                            <textarea name="field6" rows="3" class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
                         </div>
                         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-200">
                             立即預約
@@ -68,9 +68,9 @@
             <div class="lg:col-span-3">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="flex border-b">
-                        <button onclick="setFilter('all')" id="tab-all" class="px-6 py-3 font-medium text-sm tab-active">全部</button>
-                        <button onclick="setFilter('active')" id="tab-active" class="px-6 py-3 font-medium text-sm text-gray-500 hover:text-blue-600">待處理 (Active)</button>
-                        <button onclick="setFilter('done')" id="tab-done" class="px-6 py-3 font-medium text-sm text-gray-500 hover:text-blue-600">已上載 (Done)</button>
+                        <button onclick="changeFilter('all')" id="tab-all" class="px-6 py-3 font-medium text-sm tab-active">全部</button>
+                        <button onclick="changeFilter('active')" id="tab-active" class="px-6 py-3 font-medium text-sm text-gray-500">Active</button>
+                        <button onclick="changeFilter('done')" id="tab-done" class="px-6 py-3 font-medium text-sm text-gray-500">已上載</button>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -81,87 +81,118 @@
                                     <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">姓名 / 證件</th>
                                     <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">入住時間</th>
                                     <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">房型</th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">聯絡電話</th>
                                     <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">操作</th>
                                 </tr>
                             </thead>
-                            <tbody id="bookingTableBody" class="divide-y divide-gray-100">
-                                </tbody>
+                            <tbody id="bookingTableBody" class="divide-y divide-gray-100"></tbody>
                         </table>
                     </div>
-                    <div id="emptyState" class="hidden p-10 text-center text-gray-400">
-                        目前沒有預約資料
-                    </div>
+                    <div id="emptyState" class="hidden p-10 text-center text-gray-400">目前沒有預約資料</div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let bookings = JSON.parse(localStorage.getItem('hotel_bookings')) || [];
         let currentFilter = 'all';
 
-        const bookingForm = document.getElementById('bookingForm');
-        const tableBody = document.getElementById('bookingTableBody');
-        const emptyState = document.getElementById('emptyState');
+        // 1. 讀取資料
+        function loadData() {
+            const data = localStorage.getItem('records');
+            return data ? JSON.parse(data) : [];
+        }
 
-        // 初始化
-        renderTable();
+        // 2. 儲存資料
+        function saveData(records) {
+            localStorage.setItem('records', JSON.stringify(records));
+            applyFilterAndRender();
+        }
 
-        // 表單提交事件
-        bookingForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const newBooking = {
+        // 3. 建立 Record
+        function createRecord(formData) {
+            const records = loadData();
+            const newRecord = {
                 id: Date.now(),
                 createdAt: new Date().toISOString(),
                 status: 'active',
-                field1: document.getElementById('field1').value,
-                field2: document.getElementById('field2').value,
-                field3: document.getElementById('field3').value,
-                field4: document.getElementById('field4').value,
-                field5: document.getElementById('field5').value,
-                field6: document.getElementById('field6').value
+                field1: formData.get('field1'),
+                field2: formData.get('field2'),
+                field3: formData.get('field3'),
+                field4: formData.get('field4'),
+                field5: formData.get('field5'),
+                field6: formData.get('field6')
             };
-
-            bookings.push(newBooking);
-            saveAndRender();
-            bookingForm.reset();
-        });
-
-        // 儲存至 localStorage 並重新渲染
-        function saveAndRender() {
-            localStorage.setItem('hotel_bookings', JSON.stringify(bookings));
-            renderTable();
+            records.push(newRecord);
+            saveData(records);
         }
 
-        // 切換狀態
-        function toggleStatus(id) {
-            bookings = bookings.map(item => {
-                if (item.id === id) {
-                    return { ...item, status: item.status === 'active' ? 'done' : 'active' };
-                }
-                return item;
-            });
-            saveAndRender();
-        }
-
-        // 刪除資料
-        function deleteBooking(id) {
-            if(confirm('確定要刪除此筆預約嗎？')) {
-                bookings = bookings.filter(item => item.id !== id);
-                saveAndRender();
+        // 4. 更新 Record (切換狀態或刪除)
+        function updateRecord(id, changes) {
+            let records = loadData();
+            if (changes === null) {
+                records = records.filter(r => r.id !== id);
+            } else {
+                records = records.map(r => r.id === id ? { ...r, ...changes } : r);
             }
+            saveData(records);
         }
 
-        // 過濾器切換
-        function setFilter(filter) {
-            currentFilter = filter;
-            
-            // 更新 UI 樣式
+        // 5. 顯示資料
+        function renderList(recordsToShow) {
+            const tableBody = document.getElementById('bookingTableBody');
+            const emptyState = document.getElementById('emptyState');
+            tableBody.innerHTML = '';
+
+            if (recordsToShow.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            recordsToShow.forEach(item => {
+                const isDone = item.status === 'done';
+                const row = document.createElement('tr');
+                row.className = `hover:bg-gray-50 transition-colors ${isDone ? 'status-done' : ''}`;
+                
+                row.innerHTML = `
+                    <td class="px-4 py-4">
+                        <span class="px-2 py-1 text-xs rounded-full ${isDone ? 'bg-gray-200 text-gray-500' : 'bg-green-100 text-green-700'}">
+                            ${isDone ? '已上載' : 'Active'}
+                        </span>
+                    </td>
+                    <td class="px-4 py-4">
+                        <div class="font-medium text-gray-900">${item.field1}</div>
+                        <div class="text-xs text-gray-500">${item.field2}</div>
+                    </td>
+                    <td class="px-4 py-4 text-sm text-gray-600">${item.field3.replace('T', ' ')}</td>
+                    <td class="px-4 py-4 text-sm text-gray-600">${item.field4}</td>
+                    <td class="px-4 py-4 text-sm space-x-2">
+                        <button onclick="handleStatusToggle(${item.id}, '${item.status}')" class="text-blue-600 hover:text-blue-800 font-medium">
+                            ${isDone ? '重啟' : '完成'}
+                        </button>
+                        <button onclick="handleDelete(${item.id})" class="text-red-500 hover:text-red-700">刪除</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // 輔助函式：處理過濾並渲染
+        function applyFilterAndRender() {
+            const allRecords = loadData();
+            const filtered = allRecords.filter(r => {
+                if (currentFilter === 'all') return true;
+                return r.status === currentFilter;
+            });
+            renderList(filtered);
+            updateTabs();
+        }
+
+        // 輔助函式：切換 Tab UI
+        function updateTabs() {
             ['all', 'active', 'done'].forEach(f => {
                 const tab = document.getElementById(`tab-${f}`);
-                if (f === filter) {
+                if (f === currentFilter) {
                     tab.classList.add('tab-active');
                     tab.classList.remove('text-gray-500');
                 } else {
@@ -169,60 +200,33 @@
                     tab.classList.add('text-gray-500');
                 }
             });
-
-            renderTable();
         }
 
-        // 渲染表格
-        function renderTable() {
-            const filteredData = bookings.filter(item => {
-                if (currentFilter === 'all') return true;
-                return item.status === currentFilter;
-            });
+        function changeFilter(filter) {
+            currentFilter = filter;
+            applyFilterAndRender();
+        }
 
-            tableBody.innerHTML = '';
-            
-            if (filteredData.length === 0) {
-                emptyState.classList.remove('hidden');
-            } else {
-                emptyState.classList.add('hidden');
-                filteredData.forEach(item => {
-                    const isDone = item.status === 'done';
-                    const row = document.createElement('tr');
-                    row.className = `hover:bg-gray-50 transition-colors ${isDone ? 'status-done' : ''}`;
-                    
-                    row.innerHTML = `
-                        <td class="px-4 py-4">
-                            <span class="px-2 py-1 text-xs rounded-full ${isDone ? 'bg-gray-200 text-gray-500' : 'bg-green-100 text-green-700'}">
-                                ${isDone ? '已上載' : '等待中'}
-                            </span>
-                        </td>
-                        <td class="px-4 py-4">
-                            <div class="font-medium text-gray-900">${item.field1}</div>
-                            <div class="text-xs text-gray-500">${item.field2}</div>
-                        </td>
-                        <td class="px-4 py-4 text-sm text-gray-600">
-                            ${item.field3.replace('T', ' ')}
-                        </td>
-                        <td class="px-4 py-4 text-sm text-gray-600">
-                            ${item.field4}
-                        </td>
-                        <td class="px-4 py-4 text-sm text-gray-600">
-                            ${item.field5}
-                        </td>
-                        <td class="px-4 py-4 text-sm space-x-2">
-                            <button onclick="toggleStatus(${item.id})" class="text-blue-600 hover:text-blue-800 font-medium">
-                                ${isDone ? '重啟' : '完成'}
-                            </button>
-                            <button onclick="deleteBooking(${item.id})" class="text-red-500 hover:text-red-700">
-                                刪除
-                            </button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
+        function handleStatusToggle(id, currentStatus) {
+            const nextStatus = currentStatus === 'active' ? 'done' : 'active';
+            updateRecord(id, { status: nextStatus });
+        }
+
+        function handleDelete(id) {
+            if (confirm('確定要刪除此預約？')) {
+                updateRecord(id, null);
             }
         }
+
+        // 初始化與事件綁定
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            createRecord(formData);
+            this.reset();
+        });
+
+        window.onload = applyFilterAndRender;
     </script>
 </body>
 </html>
