@@ -216,14 +216,9 @@
 
         async function updateRecord(id, changes) {
             let records = JSON.parse(localStorage.getItem('records') || "[]");
-            
-            // 邏輯刪除：若傳入 null 則標記為 deleted
             if (changes === null) changes = { status: 'deleted' };
-            
             records = records.map(r => r.id === id ? { ...r, ...changes } : r);
             saveData(records);
-            
-            // 同步變更至雲端
             await syncToSheet({ action: "update", id: id, changes: changes });
             await applyFilterAndRender();
         }
@@ -233,7 +228,6 @@
             const emptyState = document.getElementById('emptyState');
             tableBody.innerHTML = '';
 
-            // 根據當前分頁過濾資料
             let filtered;
             if (currentFilter === 'deleted') {
                 filtered = recordsToShow.filter(r => r.status === 'deleted');
@@ -270,20 +264,33 @@
                     <td class="px-6 py-5">
                         <div class="font-bold text-slate-800 item-text flex items-center">
                             ${item.field1} 
-                            ${!isDeleted ? `<button onclick="handleEditName(${item.id}, '${item.field1}')" class="ml-2 text-[10px] text-blue-500 hover:bg-blue-50 px-1.5 rounded border border-blue-200">修改姓名</button>` : ''}
+                            ${!isDeleted ? `<button onclick="handleEditField(${item.id}, 'field1', '旅客姓名', '${item.field1}')" class="ml-2 text-[10px] text-blue-500 hover:bg-blue-50 px-1.5 rounded border border-blue-200">修改</button>` : ''}
                         </div>
-                        <div class="text-xs text-slate-600 mt-2 font-medium">國籍：${item.field7 || '未註明'}</div>
-                        <div class="text-[11px] text-slate-500 mt-1">證件：${item.field2}</div>
-                        <div class="text-[11px] text-slate-500 mt-1 font-mono">電話：${item.field5}</div>
+                        <div class="text-xs text-slate-600 mt-2 flex items-center">
+                            國籍：${item.field7 || '未註明'} 
+                            ${!isDeleted ? `<button onclick="handleEditField(${item.id}, 'field7', '國籍', '${item.field7}')" class="ml-1 text-[9px] text-slate-400 hover:text-blue-500">[改]</button>` : ''}
+                        </div>
+                        <div class="text-[11px] text-slate-500 mt-1 flex items-center">
+                            證件：${item.field2} 
+                            ${!isDeleted ? `<button onclick="handleEditField(${item.id}, 'field2', '證件號碼', '${item.field2}')" class="ml-1 text-[9px] text-slate-400 hover:text-blue-500">[改]</button>` : ''}
+                        </div>
+                        <div class="text-[11px] text-slate-500 mt-1 flex items-center font-mono">
+                            電話：${item.field5} 
+                            ${!isDeleted ? `<button onclick="handleEditField(${item.id}, 'field5', '聯絡電話', '${item.field5}')" class="ml-1 text-[9px] text-slate-400 hover:text-blue-500">[改]</button>` : ''}
+                        </div>
                     </td>
                     <td class="px-6 py-5">
                         <div class="text-sm font-mono text-slate-700 item-text">${String(item.field3).replace('T', ' ')}</div>
-                        ${!isDeleted ? `<button onclick="handleEditTime(${item.id}, '${item.field3}')" class="text-[10px] text-indigo-500 hover:underline mt-1 font-medium">更改日期時間</button>` : ''}
+                        ${!isDeleted ? `<button onclick="handleEditField(${item.id}, 'field3', '入住時間 (格式 YYYY-MM-DDTHH:mm)', '${item.field3}')" class="text-[10px] text-indigo-500 hover:underline mt-1 font-medium">更改日期時間</button>` : ''}
                     </td>
                     <td class="px-6 py-5 text-sm text-slate-600">
-                        <div class="item-text font-bold text-slate-700">${item.field4}</div>
-                        <div class="mt-2 p-2 bg-slate-100/50 rounded-lg text-[11px] text-slate-500 italic border-l-2 border-slate-300">
+                        <div class="item-text font-bold text-slate-700 flex items-center">
+                            ${item.field4} 
+                            ${!isDeleted ? `<button onclick="handleEditField(${item.id}, 'field4', '房型', '${item.field4}')" class="text-[10px] text-blue-500 hover:underline font-normal ml-1">換房</button>` : ''}
+                        </div>
+                        <div class="mt-2 p-2 bg-slate-100/50 rounded-lg text-[11px] text-slate-500 italic border-l-2 border-slate-300 relative">
                             ${item.field6 || '無備註事項'}
+                            ${!isDeleted ? `<button onclick="handleEditField(${item.id}, 'field6', '備註事項', '${item.field6}')" class="absolute top-1 right-1 text-[9px] text-slate-400 hover:text-blue-500">[修改備註]</button>` : ''}
                         </div>
                     </td>
                     <td class="px-6 py-5 text-sm text-center">
@@ -292,7 +299,7 @@
                                 <button onclick="handleRestore(${item.id})" class="font-bold text-emerald-600 hover:text-emerald-800 transition-colors flex items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                    </svg> 恢復預約
+                                    </svg> 恢復
                                 </button>
                             ` : `
                                 <button onclick="handleStatusToggle(${item.id}, '${item.status}')" class="font-bold text-blue-600 hover:text-blue-800 transition-colors">
@@ -311,25 +318,21 @@
             });
         }
 
-        async function handleRestore(id) {
-            if (confirm('確認要從回收站恢復此筆預約紀錄嗎？')) {
-                await updateRecord(id, { status: 'active' });
+        // --- 核心編輯函式 ---
+
+        async function handleEditField(id, fieldKey, label, oldValue) {
+            const newValue = prompt(`請輸入新的${label}：`, oldValue);
+            if (newValue !== null && newValue !== oldValue) {
+                const changes = {};
+                changes[fieldKey] = newValue;
+                await updateRecord(id, changes);
             }
         }
 
-        async function handleEditName(id, old) {
-            const val = prompt("修改旅客姓名：", old);
-            if (val !== null && val !== old) await updateRecord(id, { field1: val });
-        }
-        
-        async function handleEditRoom(id, old) {
-            const val = prompt("請輸入新房型：", old);
-            if (val !== null && val !== old) await updateRecord(id, { field4: val });
-        }
-
-        async function handleEditTime(id, old) {
-            const val = prompt("請輸入新入住時間 (格式 YYYY-MM-DDTHH:mm)：", old);
-            if (val !== null && val !== old) await updateRecord(id, { field3: val });
+        async function handleRestore(id) {
+            if (confirm('確認要恢復此筆預約紀錄嗎？')) {
+                await updateRecord(id, { status: 'active' });
+            }
         }
 
         async function applyFilterAndRender() {
@@ -352,8 +355,8 @@
         }
         
         async function handleDelete(id) { 
-            if (confirm('確認要刪除此筆預約紀錄嗎？資料將被移至回收站。')) {
-                await updateRecord(id, null); // updateRecord 會將其處理為 status: 'deleted'
+            if (confirm('確認要刪除此筆預約紀錄嗎？')) {
+                await updateRecord(id, null);
             }
         }
 
