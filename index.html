@@ -3,95 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>11膠囊旅館預約住宿系統</title>
+    <title>喜來登膠囊旅館預約住宿系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
+        }
         .status-done {
-            background-color: #f3f4f6;
-            color: #9ca3af;
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            opacity: 0.8;
+        }
+        .status-deleted {
+            background-color: #fff1f2;
+            color: #94a3b8;
+            opacity: 0.7;
+        }
+        .status-done .item-text, .status-deleted .item-text {
             text-decoration: line-through;
         }
         .tab-active {
-            border-bottom: 2px solid #3b82f6;
-            color: #3b82f6;
+            border-bottom: 3px solid #1e40af;
+            color: #1e40af;
+            font-weight: 700;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        }
+        @media (max-width: 640px) {
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen py-8 px-4">
+<body class="min-h-screen">
 
-    <div class="max-w-6xl mx-auto">
-        <header class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-gray-800">11膠囊旅館預約住宿系統</h1>
-            <p class="text-gray-600 mt-2">Capsule Hotel Booking System</p>
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-12">
+        <header class="mb-10 text-center">
+            <div class="inline-block px-4 py-1.5 mb-4 text-xs font-bold tracking-widest text-blue-700 uppercase bg-blue-100 rounded-full">
+                Professional Management
+            </div>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
+                喜來登膠囊旅館<span class="text-blue-700">預約住宿系統</span>
+            </h1>
+            <p class="text-slate-500 mt-3 text-lg font-light">Sheraton Capsule Hotel Booking & Cloud Management</p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div class="lg:col-span-1">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-semibold mb-4 text-gray-700">新增入住預約</h2>
-                    <form id="bookingForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600">姓名</label>
-                            <input type="text" name="field1" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4 xl:col-span-3">
+                <div class="glass-card p-6 rounded-2xl shadow-xl sticky top-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-1.5 h-6 bg-blue-700 rounded-full mr-3"></div>
+                        <h2 class="text-xl font-bold text-slate-800">新增入住預約</h2>
+                    </div>
+                    <form id="bookingForm" class="space-y-5">
+                        <div class="space-y-1">
+                            <label class="text-sm font-semibold text-slate-700">旅客姓名</label>
+                            <input type="text" name="field1" required placeholder="請輸入全名" 
+                                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600">證件號碼 (護照)</label>
-                            <input type="text" name="field2" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                        <div class="space-y-1">
+                            <label class="text-sm font-semibold text-slate-700">證件號碼</label>
+                            <input type="text" name="field2" required placeholder="護照或身份證字號" 
+                                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600">入住時間</label>
-                            <input type="datetime-local" name="field3" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                        <div class="space-y-1">
+                            <label class="text-sm font-semibold text-slate-700">入住日期與時間</label>
+                            <input type="datetime-local" name="field3" required 
+                                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600">入住房型</label>
-                            <select name="field4" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
-                                <option value="標準單人艙">標準單人艙</option>
-                                <option value="豪華單人艙">豪華單人艙</option>
-                                <option value="商務雙人艙">商務雙人艙</option>
+                        <div class="space-y-1">
+                            <label class="text-sm font-semibold text-slate-700">入住房型</label>
+                            <select name="field4" required 
+                                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none">
+                                <option value="標準單人艙">標準單人艙 (Standard)</option>
+                                <option value="豪華單人艙">豪華單人艙 (Deluxe)</option>
+                                <option value="商務雙人艙">商務雙人艙 (Business)</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600">聯絡號碼</label>
-                            <input type="tel" name="field5" required class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                        <div class="space-y-1">
+                            <label class="text-sm font-semibold text-slate-700">聯絡電話 / 國籍</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="tel" name="field5" required placeholder="電話" class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                                <input type="text" name="field7" required placeholder="國籍" class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600">國籍</label>
-                            <input type="text" name="field7" required placeholder="例如：中國、馬來西亞" class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none">
+                        <div class="space-y-1">
+                            <label class="text-sm font-semibold text-slate-700">備註事項</label>
+                            <textarea name="field6" rows="2" placeholder="特殊需求..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none"></textarea>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600">備註</label>
-                            <textarea name="field6" rows="3" class="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                        </div>
-                        <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-200">
-                            立即預約
+                        <button type="submit" id="submitBtn" class="btn-gradient w-full text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                            立即送出預約
                         </button>
                     </form>
                 </div>
             </div>
 
-            <div class="lg:col-span-3">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="flex border-b">
-                        <button onclick="changeFilter('all')" id="tab-all" class="px-6 py-3 font-medium text-sm tab-active">全部</button>
-                        <button onclick="changeFilter('active')" id="tab-active" class="px-6 py-3 font-medium text-sm text-gray-500">Active</button>
-                        <button onclick="changeFilter('done')" id="tab-done" class="px-6 py-3 font-medium text-sm text-gray-500">已上載</button>
+            <div class="lg:col-span-8 xl:col-span-9">
+                <div class="glass-card rounded-2xl shadow-xl overflow-hidden">
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white/50">
+                        <div class="flex space-x-1">
+                            <button onclick="changeFilter('all')" id="tab-all" class="px-5 py-2.5 text-sm transition-all tab-active">全部預約</button>
+                            <button onclick="changeFilter('active')" id="tab-active" class="px-5 py-2.5 text-sm text-slate-500 hover:text-slate-700 transition-all">預訂中</button>
+                            <button onclick="changeFilter('done')" id="tab-done" class="px-5 py-2.5 text-sm text-slate-500 hover:text-slate-700 transition-all">已完成</button>
+                            <button onclick="changeFilter('deleted')" id="tab-deleted" class="px-5 py-2.5 text-sm text-rose-500 hover:text-rose-700 transition-all flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg> 回收站
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    <div class="table-container">
                         <table class="w-full text-left border-collapse">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">狀態</th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">預約人資訊</th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">入住時間 (北京時間)</th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">房型</th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">操作</th>
+                            <thead>
+                                <tr class="bg-slate-50/80 text-slate-500 text-xs uppercase tracking-wider">
+                                    <th class="px-6 py-4 font-bold">狀態</th>
+                                    <th class="px-6 py-4 font-bold">預約詳情</th>
+                                    <th class="px-6 py-4 font-bold">預計入住</th>
+                                    <th class="px-6 py-4 font-bold">房型與備註</th>
+                                    <th class="px-6 py-4 font-bold text-center">管理操作</th>
                                 </tr>
                             </thead>
-                            <tbody id="bookingTableBody" class="divide-y divide-gray-100"></tbody>
+                            <tbody id="bookingTableBody" class="divide-y divide-slate-100">
+                                </tbody>
                         </table>
                     </div>
-                    <div id="emptyState" class="hidden p-10 text-center text-gray-400">目前沒有預約資料</div>
+                    <div id="emptyState" class="hidden p-20 text-center">
+                        <div class="text-6xl mb-4">📭</div>
+                        <p class="text-slate-400 font-medium">目前沒有符合條件的預約紀錄</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -101,69 +151,47 @@
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3cJsvzd-lK3AwQL4Dfa-gwW15tQSOTuHpGm_AReh171AphS50W-IszxXLpNH7kt7G3Q/exec";
         let currentFilter = 'all';
 
-        // --- Backend Connectors ---
-
         async function syncToSheet(payload) {
             try {
                 await fetch(APPS_SCRIPT_URL, {
                     method: "POST",
-                    mode: "no-cors", // GAS 限制通常需要 no-cors 或透過特定方式處理，但 POST 常見做法如下
+                    mode: "no-cors",
                     headers: { "Content-Type": "text/plain" },
                     body: JSON.stringify(payload)
                 });
-                console.log("Sync success:", payload.action);
-            } catch (err) {
-                console.error("Sync failed:", err);
-            }
+            } catch (err) { console.error("Sync failed:", err); }
         }
 
         async function fetchRecordsFromSheet() {
             try {
                 const response = await fetch(APPS_SCRIPT_URL);
                 const data = await response.json();
-                if (data.ok) {
-                    return data.records.map(normalizeRecord);
-                }
-                return null;
-            } catch (err) {
-                console.error("Fetch Sheet failed:", err);
-                return null;
-            }
+                return data.ok ? data.records.map(normalizeRecord) : null;
+            } catch (err) { return null; }
         }
 
         function normalizeRecord(record) {
-            // 將 Sheet Header 對應回前端使用的 Key
             return {
                 id: record.ID || record.id,
                 createdAt: record.CreatedAt || record.createdAt,
                 status: record.Status || record.status,
-                field1: record.field1,
-                field2: record.field2,
-                field3: record.field3,
-                field4: record.field4,
-                field5: record.field5,
-                field6: record.field6,
-                field7: record.field7
+                field1: record.field1, field2: record.field2, field3: record.field3,
+                field4: record.field4, field5: record.field5, field6: record.field6, field7: record.field7
             };
         }
 
-        // --- Core Functions ---
-
         async function loadData() {
-            // 優先讀取雲端
             const sheetData = await fetchRecordsFromSheet();
             if (sheetData) {
                 localStorage.setItem('records', JSON.stringify(sheetData));
                 return sheetData;
             }
-            // Fallback 到本地
             const localData = localStorage.getItem('records');
             return localData ? JSON.parse(localData) : [];
         }
 
         function saveData(records) {
             localStorage.setItem('records', JSON.stringify(records));
-            // 這裡不再呼叫 applyFilterAndRender，因為 async 流程由 caller 控制
         }
 
         async function createRecord(formData) {
@@ -180,26 +208,23 @@
                 field6: formData.get('field6'),
                 field7: formData.get('field7')
             };
-            
             records.push(newRecord);
             saveData(records);
-            
-            // 同步到雲端
             await syncToSheet({ action: "create", record: newRecord });
             await applyFilterAndRender();
         }
 
         async function updateRecord(id, changes) {
             let records = JSON.parse(localStorage.getItem('records') || "[]");
-            if (changes === null) {
-                records = records.filter(r => r.id !== id);
-                // 注意：你的 GAS 目前可能不支援刪除，此處僅處理本地
-            } else {
-                records = records.map(r => r.id === id ? { ...r, ...changes } : r);
-                // 同步更新到雲端
-                await syncToSheet({ action: "update", id: id, changes: changes });
-            }
+            
+            // 邏輯刪除：若傳入 null 則標記為 deleted
+            if (changes === null) changes = { status: 'deleted' };
+            
+            records = records.map(r => r.id === id ? { ...r, ...changes } : r);
             saveData(records);
+            
+            // 同步變更至雲端
+            await syncToSheet({ action: "update", id: id, changes: changes });
             await applyFilterAndRender();
         }
 
@@ -208,98 +233,137 @@
             const emptyState = document.getElementById('emptyState');
             tableBody.innerHTML = '';
 
-            if (recordsToShow.length === 0) {
+            // 根據當前分頁過濾資料
+            let filtered;
+            if (currentFilter === 'deleted') {
+                filtered = recordsToShow.filter(r => r.status === 'deleted');
+            } else if (currentFilter === 'all') {
+                filtered = recordsToShow.filter(r => r.status !== 'deleted');
+            } else {
+                filtered = recordsToShow.filter(r => r.status === currentFilter);
+            }
+
+            if (filtered.length === 0) {
                 emptyState.classList.remove('hidden');
                 return;
             }
 
             emptyState.classList.add('hidden');
-            recordsToShow.forEach(item => {
+            filtered.forEach(item => {
                 const isDone = item.status === 'done';
+                const isDeleted = item.status === 'deleted';
                 const row = document.createElement('tr');
-                row.className = `hover:bg-gray-50 transition-colors ${isDone ? 'status-done' : ''}`;
+                
+                let rowClass = `hover:bg-slate-50/80 transition-all `;
+                if (isDone) rowClass += 'status-done';
+                if (isDeleted) rowClass += 'status-deleted';
+                row.className = rowClass;
                 
                 row.innerHTML = `
-                    <td class="px-4 py-4">
-                        <span class="px-2 py-1 text-xs rounded-full ${isDone ? 'bg-gray-200 text-gray-500' : 'bg-green-100 text-green-700'}">
-                            ${isDone ? '已上載' : 'Active'}
+                    <td class="px-6 py-5">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold 
+                            ${isDone ? 'bg-slate-200 text-slate-500' : 
+                              isDeleted ? 'bg-rose-100 text-rose-600' : 'bg-green-100 text-green-700'}">
+                            ${isDone ? '已完成' : isDeleted ? '已刪除' : '預訂中'}
                         </span>
                     </td>
-                    <td class="px-4 py-4">
-                        <div class="font-medium text-gray-900">${item.field1} (${item.field7 || '未註明'})</div>
-                        <div class="text-xs text-gray-500">證件：${item.field2}</div>
-                        <div class="text-xs text-gray-400">電話：${item.field5}</div>
+                    <td class="px-6 py-5">
+                        <div class="font-bold text-slate-800 item-text flex items-center">
+                            ${item.field1} 
+                            ${!isDeleted ? `<button onclick="handleEditName(${item.id}, '${item.field1}')" class="ml-2 text-[10px] text-blue-500 hover:bg-blue-50 px-1.5 rounded border border-blue-200">修改姓名</button>` : ''}
+                        </div>
+                        <div class="text-xs text-slate-600 mt-2 font-medium">國籍：${item.field7 || '未註明'}</div>
+                        <div class="text-[11px] text-slate-500 mt-1">證件：${item.field2}</div>
+                        <div class="text-[11px] text-slate-500 mt-1 font-mono">電話：${item.field5}</div>
                     </td>
-                    <td class="px-4 py-4 text-sm text-gray-600 font-mono">
-                        ${String(item.field3).replace('T', ' ')}
+                    <td class="px-6 py-5">
+                        <div class="text-sm font-mono text-slate-700 item-text">${String(item.field3).replace('T', ' ')}</div>
+                        ${!isDeleted ? `<button onclick="handleEditTime(${item.id}, '${item.field3}')" class="text-[10px] text-indigo-500 hover:underline mt-1 font-medium">更改日期時間</button>` : ''}
                     </td>
-                    <td class="px-4 py-4 text-sm text-gray-600">
-                        ${item.field4}
+                    <td class="px-6 py-5 text-sm text-slate-600">
+                        <div class="item-text font-bold text-slate-700">${item.field4}</div>
+                        <div class="mt-2 p-2 bg-slate-100/50 rounded-lg text-[11px] text-slate-500 italic border-l-2 border-slate-300">
+                            ${item.field6 || '無備註事項'}
+                        </div>
                     </td>
-                    <td class="px-4 py-4 text-sm space-x-2">
-                        <button onclick="handleStatusToggle(${item.id}, '${item.status}')" class="text-blue-600 hover:text-blue-800 font-medium">
-                            ${isDone ? '重啟' : '完成'}
-                        </button>
-                        <button onclick="handleDelete(${item.id})" class="text-red-500 hover:text-red-700">刪除</button>
+                    <td class="px-6 py-5 text-sm text-center">
+                        <div class="flex items-center justify-center space-x-3">
+                            ${isDeleted ? `
+                                <button onclick="handleRestore(${item.id})" class="font-bold text-emerald-600 hover:text-emerald-800 transition-colors flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg> 恢復預約
+                                </button>
+                            ` : `
+                                <button onclick="handleStatusToggle(${item.id}, '${item.status}')" class="font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                                    ${isDone ? '重啟' : '完成'}
+                                </button>
+                                <button onclick="handleDelete(${item.id})" class="text-rose-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            `}
+                        </div>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
         }
 
+        async function handleRestore(id) {
+            if (confirm('確認要從回收站恢復此筆預約紀錄嗎？')) {
+                await updateRecord(id, { status: 'active' });
+            }
+        }
+
+        async function handleEditName(id, old) {
+            const val = prompt("修改旅客姓名：", old);
+            if (val !== null && val !== old) await updateRecord(id, { field1: val });
+        }
+        
+        async function handleEditRoom(id, old) {
+            const val = prompt("請輸入新房型：", old);
+            if (val !== null && val !== old) await updateRecord(id, { field4: val });
+        }
+
+        async function handleEditTime(id, old) {
+            const val = prompt("請輸入新入住時間 (格式 YYYY-MM-DDTHH:mm)：", old);
+            if (val !== null && val !== old) await updateRecord(id, { field3: val });
+        }
+
         async function applyFilterAndRender() {
             const allRecords = await loadData();
-            const filtered = allRecords.filter(r => {
-                if (currentFilter === 'all') return true;
-                return r.status === currentFilter;
-            });
-            renderList(filtered);
+            renderList(allRecords);
             updateTabs();
         }
 
         function updateTabs() {
-            ['all', 'active', 'done'].forEach(f => {
+            ['all', 'active', 'done', 'deleted'].forEach(f => {
                 const tab = document.getElementById(`tab-${f}`);
-                if (tab) {
-                    if (f === currentFilter) {
-                        tab.classList.add('tab-active');
-                        tab.classList.remove('text-gray-500');
-                    } else {
-                        tab.classList.remove('tab-active');
-                        tab.classList.add('text-gray-500');
-                    }
-                }
+                if (tab) f === currentFilter ? tab.classList.add('tab-active') : tab.classList.remove('tab-active');
             });
         }
 
-        function changeFilter(filter) {
-            currentFilter = filter;
-            applyFilterAndRender();
+        function changeFilter(filter) { currentFilter = filter; applyFilterAndRender(); }
+        
+        async function handleStatusToggle(id, current) { 
+            await updateRecord(id, { status: current === 'active' ? 'done' : 'active' }); 
         }
-
-        async function handleStatusToggle(id, currentStatus) {
-            const nextStatus = currentStatus === 'active' ? 'done' : 'active';
-            await updateRecord(id, { status: nextStatus });
-        }
-
-        async function handleDelete(id) {
-            if (confirm('確定要刪除此預約？')) {
-                await updateRecord(id, null);
+        
+        async function handleDelete(id) { 
+            if (confirm('確認要刪除此筆預約紀錄嗎？資料將被移至回收站。')) {
+                await updateRecord(id, null); // updateRecord 會將其處理為 status: 'deleted'
             }
         }
 
         document.getElementById('bookingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerText = "上傳中...";
-            
-            const formData = new FormData(this);
-            await createRecord(formData);
-            
+            btn.disabled = true; btn.innerText = "連線雲端中...";
+            await createRecord(new FormData(this));
             this.reset();
-            btn.disabled = false;
-            btn.innerText = "立即預約";
+            btn.disabled = false; btn.innerText = "立即送出預約";
         });
 
         window.onload = applyFilterAndRender;
